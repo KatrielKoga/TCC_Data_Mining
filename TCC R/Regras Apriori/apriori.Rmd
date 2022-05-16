@@ -1,0 +1,62 @@
+
+impotação de bibliotecas
+
+```{r}
+library(RMariaDB)
+library(arules)
+library(arulesViz)
+```
+
+Conectar com o bando de dados
+```{r}
+connection <- dbConnect(RMariaDB::MariaDB(), user='root', password='password', dbname='uso_diario', host='localhost')
+# testando conexão
+dbListTables(connection)
+#dbDisconnect(connection)
+```
+criando e executando query
+
+```{r}
+query <- "select SUBSTRING_INDEX(SUBSTRING_INDEX(group_concat(distinct substring(linha, 7)), ',', 1), ',', -1) as origem, destino(SUBSTRING_INDEX(SUBSTRING_INDEX(group_concat(distinct substring(linha, 7)), ',', 1), ',', -1), group_concat(distinct substring(linha, 7)))  AS destino from vinteum where tipo_cartao <> 'Pagante' group by n_cartao, data;"
+rs = dbSendQuery(connection,query)
+UDMes<-dbFetch(rs)
+
+```
+
+limpeza e preparação dos dados par o algoritmo
+
+```{r}
+usoMensal = subset(UDMes, UDMes$destino != '')
+
+df = data.frame(
+  id = 1:nrow(usoMensal),
+  items = factor(c(as.character(usoMensal$origem), as.character(usoMensal$destino)))
+)
+
+trans <- as(split(df[,"items"], df[,"id"]), "transactions")
+#inspect(trans)
+
+
+memory.limit()
+memory.limit(size=25000)
+```
+
+aplicação do algoritmo
+
+```{r}
+regras = apriori(trans, parameter= list(supp=0.0001, conf=0.2, minlen=2))
+
+inspect(regras) 
+
+# visualização em gráficos
+
+plot(regras, method="graph", control=list(type="items"))
+
+```
+
+Salvar regras em csv
+
+```{r}
+write.csv(DATAFRAME(regras),"regras21.csv")
+```
+

@@ -1,0 +1,73 @@
+
+pegar dados do mes
+
+```{r}
+sete = read.csv('regras17.csv')
+oito = read.csv('regras18.csv')
+nove = read.csv('regras19.csv')
+vinte = read.csv('regras20.csv')
+um = read.csv('regras21.csv')
+
+head(sete)
+
+
+```
+
+
+```{r}
+library(tidyverse)
+
+
+junto = list(sete, oito, nove, vinte, um)
+
+dado = junto %>% reduce(full_join, by=c('LHS', 'RHS'))
+head(dado)
+dado[26:52,]
+
+```
+
+
+```{r}
+
+
+suporte = dado %>% select('LHS', 'RHS', 'support.y', 'support.x.x', 'support.y.y', 'support') %>% rename( 'origem'='LHS' , 'destino'='RHS', 'dezoito'='support.y', 'dezenove'='support.x.x', 'vinte'='support.y.y', 'vinteum'='support') %>% unite('origem_destino','origem':'destino', sep="=>")
+suporte
+suporte2 = filter(suporte, rowSums(is.na(suporte[,2:5])) != ncol(suporte[,2:5]))
+suporte2
+
+#suporte[is.na(suporte)] <- 0
+
+confianca = dado %>% select('LHS', 'RHS', 'confidence.y', 'confidence.x.x', 'confidence.y.y', 'confidence') %>% rename( 'origem'='LHS' , 'destino'='RHS', 'dezoito'='confidence.y', 'dezenove'='confidence.x.x', 'vinte'='confidence.y.y', 'vinteum'='confidence') %>% unite('origem_destino','origem':'destino', sep="=>")
+confianca
+confianca2 = filter(confianca, rowSums(is.na(confianca[,2:5])) != ncol(confianca[,2:5]))
+confianca2
+#confianca[is.na(confianca)] <- 0
+
+lift = dado %>% select('LHS', 'RHS', 'lift.y', 'lift.x.x', 'lift.y.y', 'lift') %>% rename( 'origem'='LHS' , 'destino'='RHS' , 'dezoito'='lift.y', 'dezenove'='lift.x.x', 'vinte'='lift.y.y', 'vinteum'='lift') %>% unite('origem_destino','origem':'destino', sep="=>")
+lift
+lift2 = filter(lift, rowSums(is.na(lift[,2:5])) != ncol(lift[,2:5]))
+lift2
+
+#lift[is.na(lift)] <- 0
+
+contagem = dado %>% select('LHS', 'RHS', 'count.y', 'count.x.x', 'count.y.y', 'count') %>% rename( 'origem'='LHS' , 'destino'='RHS', 'dezoito'='count.y', 'dezenove'='count.x.x', 'vinte'='count.y.y', 'vinteum'='count') %>% unite('origem_destino','origem':'destino', sep="=>")
+contagem
+contagem2 = filter(contagem, rowSums(is.na(contagem[,2:5])) != ncol(contagem[,2:5]))
+contagem2
+
+#contagem[is.na(contagem)] <- 0
+
+```
+
+```{r}
+ggplot(data=suporte2) + 
+  geom_point(aes(x=origem_destino, y=dezoito, group=1, color="18")) +
+  geom_point(aes(x=origem_destino, y=dezenove, group=1, color="19")) +
+  geom_point(aes(x=origem_destino, y=vinte, group=1, color="20")) +
+  geom_point(aes(x=origem_destino, y=vinteum, group=1, color="21")) +
+  theme(axis.text.x = element_text(angle = 70,vjust = 1.1, hjust = 1.1),legend.position="top") + ylab("Suporte") + ggtitle("Suporte das regras") + xlab("Origem => Destino")
+
+
+ggsave('suporte_regra.png', plot = last_plot())
+```
+

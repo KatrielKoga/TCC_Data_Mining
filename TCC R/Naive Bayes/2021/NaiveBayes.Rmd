@@ -1,0 +1,84 @@
+impotação de bibliotecas
+
+```{r}
+library(RMariaDB)
+library(e1071)
+#library(arules)
+#library(arulesViz)
+```
+
+Conectar com o bando de dados
+```{r}
+
+connection <- dbConnect(RMariaDB::MariaDB(), user='root', password='password', dbname='uso_diario', host='localhost')
+# testando conexão
+dbListTables(connection)
+#dbDisconnect(connection)
+```
+criando e executando query
+
+```{r}
+query <- "select getdiasemana(data) as dia_semana, SUBSTRING_INDEX(SUBSTRING_INDEX(group_concat(distinct substring(linha, 7)), ',', 1), ',', -1) as origem, destino(SUBSTRING_INDEX(SUBSTRING_INDEX(group_concat(distinct substring(linha, 7)), ',', 1), ',', -1), group_concat(distinct substring(linha, 7)))  AS destino from vinteum where tipo_cartao <> 'Pagante' group by n_cartao, data;"
+rs = dbSendQuery(connection,query)
+UDMes<-dbFetch(rs)
+
+```
+
+limpeza e preparação dos dados par o algoritmo
+
+```{r}
+usoMensal = subset(UDMes, UDMes$destino != '')
+
+usoMensal$destino = as.factor(usoMensal$destino)
+
+```
+
+criar dados treino e teste
+
+```{r}
+amostra = sample(2,224,replace=T, prob=c(0.7,0.3))
+treino = usoMensal[amostra==1,]
+teste = usoMensal[amostra==2,]
+```
+
+criando modelo
+
+```{r}
+modelo <- naiveBayes(destino ~., treino)
+
+library(rpart)
+
+arvore = rpart(destino ~ ., data=treino,  method="class")
+
+```
+
+previsão
+
+```{r}
+predicao <- predict(modelo,teste)
+```
+
+tabela confusão
+
+```{r}
+confusao = table(teste$destino,predicao)
+confusao
+
+confusao[1]
+confusao[106]
+confusao[211]
+i = 1
+j = 1
+certo = list()
+while (j < 105) {
+  certo <- append(certo, confusao[i])
+  i <- i + 105
+  j<- j + 1
+}
+
+Reduce("+", certo)
+
+
+taxaacerto = Reduce("+", certo) / sum(confusao)
+```
+
