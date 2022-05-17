@@ -64,21 +64,6 @@ tabela confusão
 confusao = table(teste$destino,predicao)
 confusao
 
-confusao[1]
-confusao[106]
-confusao[211]
-i = 1
-j = 1
-certo = list()
-while (j < 105) {
-  certo <- append(certo, confusao[i])
-  i <- i + 105
-  j<- j + 1
-}
-
-Reduce("+", certo)
-
-
 taxaacerto = Reduce("+", certo) / sum(confusao)
 ```
 

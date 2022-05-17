@@ -1,6 +1,5 @@
 const files = require('./files');
 const fs = require('fs');
-// import connection from './app';
 
 const mysql = require('mysql');
 const connection = mysql.createConnection({
@@ -26,6 +25,8 @@ connection.connect(err => {
 	lerMes();
 });
 
+// criar pasta arquivos e adicionar os arquivos de uso diario .txt (max 20 arquivos)
+
 async function lerMes() {
 	fs.readdir('./arquivos', async (err, arquivos) => {
 		for (const arquivo of arquivos) {
@@ -38,7 +39,6 @@ async function lerMes() {
 async function busca(data) {
 	var dados = files.read(data);
 	var linhas = dados.split('\n');
-	// linhas.forEach(element => {
 	for (const element of linhas) {
 		const [
 			nome,
@@ -70,7 +70,6 @@ async function busca(data) {
 				console.log('Last insert ID:', res.insertId);
 			});
 		}
-		// console.log(dado);
 	}
 	dados = null;
 	linhas = null;

@@ -9,6 +9,7 @@ library(arulesViz)
 
 Conectar com o bando de dados
 ```{r}
+# alterar dados para realizar a conexão
 connection <- dbConnect(RMariaDB::MariaDB(), user='root', password='password', dbname='uso_diario', host='localhost')
 # testando conexão
 dbListTables(connection)
@@ -23,7 +24,7 @@ UDMes<-dbFetch(rs)
 
 ```
 
-limpeza e preparação dos dados par o algoritmo
+limpeza e preparação dos dados para o algoritmo
 
 ```{r}
 usoMensal = subset(UDMes, UDMes$destino != '')
@@ -36,14 +37,12 @@ df = data.frame(
 trans <- as(split(df[,"items"], df[,"id"]), "transactions")
 #inspect(trans)
 
-
-memory.limit()
-memory.limit(size=25000)
 ```
 
 aplicação do algoritmo
 
 ```{r}
+# alterar valores de supp e conf para obtenção de melhores dados
 regras = apriori(trans, parameter= list(supp=0.0001, conf=0.2, minlen=2))
 
 inspect(regras) 
@@ -57,6 +56,6 @@ plot(regras, method="graph", control=list(type="items"))
 Salvar regras em csv
 
 ```{r}
-write.csv(DATAFRAME(regras),"regras21.csv")
+write.csv(DATAFRAME(regras),"nomeArquivo.csv")
 ```
 

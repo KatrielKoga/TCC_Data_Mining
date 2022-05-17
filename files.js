@@ -6,15 +6,4 @@ const read = nomeArquivo => {
 	});
 };
 
-// const write = (nomeArquivo, conteudo) => {
-// 	const dirname = `${__dirname}/alterados`;
-// 	if (!fs.existsSync(dirname)) {
-// 		fs.mkdir(dirname);
-// 	}
-
-// 	fs.writeFileSync(`${dirname}/${nomeArquivo}`, conteudo, {
-// 		encoding: 'utf-8',
-// 	});
-// };
-
-module.exports = { read /*, write*/ };
+module.exports = { read };
